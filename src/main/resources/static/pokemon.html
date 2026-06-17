@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pokémon</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.14);
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --text-dim: #555;
+    --red: #e63946;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  .back-btn {
+    position: fixed;
+    top: 20px;
+    left: 24px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .back-btn:hover { border-color: var(--border-hover); color: var(--text); }
+
+  .nav-btns {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    display: flex;
+    gap: 8px;
+  }
+  .nav-btn {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .nav-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 380px;
+    overflow: hidden;
+  }
+
+  .card-top {
+    padding: 18px 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-num {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .shiny-btn {
+    background: none;
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .shiny-btn:hover { border-color: var(--border-hover); color: var(--text-muted); }
+  .shiny-btn.active { border-color: #EF9F27; color: #EF9F27; background: rgba(239,159,39,0.08); }
+
+  .card-img-wrap {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 8px 0;
+  }
+  .card-glow {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    opacity: 0.08;
+    filter: blur(32px);
+  }
+  .card-img-wrap img {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    position: relative;
+    transition: opacity 0.18s;
+  }
+
+  .card-body { padding: 0 20px 20px; }
+
+  .card-name {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .types {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .stats { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .stat-row { display: flex; align-items: center; gap: 10px; }
+  .stat-key {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+    width: 28px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+  .bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .stat-num {
+    font-size: 12px;
+    color: var(--text-muted);
+    width: 26px;
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  .card-footer {
+    border-top: 0.5px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .meta { text-align: center; }
+  .meta-l {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+  }
+  .meta-v { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+
+  .total-badge {
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .total-label { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+  .total-val { font-size: 18px; font-weight: 700; color: var(--text); }
+
+  .loading, .error {
+    color: var(--text-dim);
+    font-size: 14px;
+    text-align: center;
+  }
+  .error { color: var(--red); }
+</style>
+</head>
+<body>
+
+<a class="back-btn" href="pokedex.html">
+  ← Voltar
+</a>
+
+<div class="nav-btns">
+  <button class="nav-btn" id="btn-prev">← Anterior</button>
+  <button class="nav-btn" id="btn-next">Próximo →</button>
+</div>
+
+<div id="root"><div class="loading">Carregando...</div></div>
+
+<script>
+const API = 'http://localhost:8080';
+
+const TYPE_STYLES = {
+  "Fogo":      { bg:"rgba(216,90,48,0.15)",  text:"#f0997b", bar:"#D85A30" },
+  "Água":      { bg:"rgba(55,138,221,0.15)", text:"#85B7EB", bar:"#378ADD" },
+  "Planta":    { bg:"rgba(99,153,34,0.15)",  text:"#97C459", bar:"#639922" },
+  "Veneno":    { bg:"rgba(127,119,221,0.15)",text:"#AFA9EC", bar:"#7F77DD" },
+  "Elétrico":  { bg:"rgba(239,159,39,0.15)", text:"#FAC775", bar:"#EF9F27" },
+  "Psíquico":  { bg:"rgba(212,83,126,0.15)", text:"#ED93B1", bar:"#D4537E" },
+  "Gelo":      { bg:"rgba(133,183,235,0.15)",text:"#B5D4F4", bar:"#85B7EB" },
+  "Dragão":    { bg:"rgba(83,74,183,0.15)",  text:"#AFA9EC", bar:"#534AB7" },
+  "Sombrio":   { bg:"rgba(95,94,90,0.15)",   text:"#888780", bar:"#5F5E5A" },
+  "Lutador":   { bg:"rgba(216,90,48,0.15)",  text:"#F0997B", bar:"#D85A30" },
+  "Voador":    { bg:"rgba(55,138,221,0.12)", text:"#85B7EB", bar:"#85B7EB" },
+  "Inseto":    { bg:"rgba(99,153,34,0.12)",  text:"#97C459", bar:"#97C459" },
+  "Pedra":     { bg:"rgba(136,135,128,0.15)",text:"#B4B2A9", bar:"#888780" },
+  "Fantasma":  { bg:"rgba(83,74,183,0.12)",  text:"#AFA9EC", bar:"#534AB7" },
+  "Aço":       { bg:"rgba(180,178,169,0.12)",text:"#B4B2A9", bar:"#B4B2A9" },
+  "Terra":     { bg:"rgba(186,117,23,0.15)", text:"#FAC775", bar:"#BA7517" },
+  "Normal":    { bg:"rgba(136,135,128,0.1)", text:"#888780", bar:"#888780" },
+  "Fada":      { bg:"rgba(212,83,126,0.1)",  text:"#ED93B1", bar:"#ED93B1" },
+};
+
+const STAT_LABELS = { hp:"HP", ataque:"ATK", defesa:"DEF", ataqueEspecial:"SpA", defesaEspecial:"SpD", velocidade:"VEL" };
+const STAT_MAX    = { hp:255, ataque:190, defesa:230, ataqueEspecial:194, defesaEspecial:230, velocidade:200 };
+
+function barColor(key, val) {
+  const p = val / STAT_MAX[key];
+  if (p >= 0.65) return "#639922";
+  if (p >= 0.38) return "#EF9F27";
+  return "#e63946";
+}
+
+function baseTotal(e) {
+  return (e.hp||0)+(e.ataque||0)+(e.defesa||0)+(e.ataqueEspecial||0)+(e.defesaEspecial||0)+(e.velocidade||0);
+}
+
+function numStr(n) { return "#" + String(n).padStart(3,"0"); }
+
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+
+async function load() {
+  if (!id) {
+    document.getElementById("root").innerHTML = `<div class="error">ID não informado na URL.</div>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/pokemons/${id}`);
+    if (!res.ok) throw new Error();
+    const p = await res.json();
+    render(p);
+    document.title = p.nome + " — Pokédex";
+
+    document.getElementById("btn-prev").disabled = p.numeroPokedex <= 1;
+    document.getElementById("btn-next").disabled = false;
+
+    document.getElementById("btn-prev").onclick = () => goTo(p.numeroPokedex - 1);
+    document.getElementById("btn-next").onclick = () => goTo(p.numeroPokedex + 1);
+  } catch {
+    document.getElementById("root").innerHTML = `<div class="error">Pokémon não encontrado.</div>`;
+  }
+}
+
+async function goTo(numero) {
+  try {
+    const res = await fetch(`${API}/pokemons?numeroPokedex=${numero}`);
+    const list = await res.json();
+    if (list.length > 0) {
+      location.href = `pokemon.html?id=${list[0].id}`;
+    }
+  } catch {}
+}
+
+function render(p) {
+  const mainType = TYPE_STYLES[p.tipos?.[0]?.nome] || TYPE_STYLES["Normal"];
+  const total = baseTotal(p.estatisticas);
+  const hasShiny = !!p.imagemShinyUrl;
+  let shiny = false;
+
+  const root = document.getElementById("root");
+  root.innerHTML = `
+    <div class="card">
+      <div class="card-top">
+        <span class="card-num">${numStr(p.numeroPokedex)}</span>
+        ${hasShiny ? `<button class="shiny-btn" id="shiny-btn">✦ Shiny</button>` : `<span></span>`}
+      </div>
+      <div class="card-img-wrap">
+        <div class="card-glow" style="background:${mainType.bar}"></div>
+        <img id="poke-img" src="${p.imageUrl || ''}" alt="${p.nome}" />
+      </div>
+      <div class="card-body">
+        <div class="card-name">${p.nome}</div>
+        <div class="types">
+          ${(p.tipos||[]).map(t => {
+            const s = TYPE_STYLES[t.nome] || TYPE_STYLES["Normal"];
+            return `<span class="type-badge" style="background:${s.bg};color:${s.text}">${t.nome}</span>`;
+          }).join("")}
+        </div>
+
+        <div class="total-badge">
+          <span class="total-label">Total de base</span>
+          <span class="total-val">${total}</span>
+        </div>
+
+        <div class="section-label">Estatísticas</div>
+        <div class="stats">
+          ${Object.entries(STAT_LABELS).map(([key, label]) => {
+            const val = p.estatisticas?.[key] ?? 0;
+            const pct = Math.round((val / STAT_MAX[key]) * 100);
+            return `
+              <div class="stat-row">
+                <span class="stat-key">${label}</span>
+                <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(key,val)}"></div></div>
+                <span class="stat-num">${val}</span>
+              </div>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="meta"><div class="meta-l">Altura</div><div class="meta-v">${p.altura?.toFixed(1)}m</div></div>
+        <div class="meta"><div class="meta-l">Peso</div><div class="meta-v">${p.peso?.toFixed(1)}kg</div></div>
+      </div>
+    </div>
+  `;
+
+  if (hasShiny) {
+    const btn = document.getElementById("shiny-btn");
+    const img = document.getElementById("poke-img");
+    btn.addEventListener("click", () => {
+      shiny = !shiny;
+      img.style.opacity = "0";
+      setTimeout(() => {
+        img.src = shiny ? p.imagemShinyUrl : p.imageUrl;
+        img.style.opacity = "1";
+      }, 150);
+      btn.classList.toggle("active", shiny);
+    });
+  }
+}
+
+load();
+</script>
+</body>
+</html>

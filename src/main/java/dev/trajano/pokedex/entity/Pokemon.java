@@ -17,13 +17,9 @@ public class Pokemon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Integer numeroPokedex;
-
     private String nome;
-
     private Double altura;
-
     private Double peso;
 
     @ManyToMany
@@ -36,4 +32,6 @@ public class Pokemon {
 
     @OneToOne(cascade = CascadeType.ALL)
     private Estatisticas estatisticas;
+    private String imagemUrl;
+    private String imagemShinyUrl;
 }
